@@ -29,13 +29,13 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import java.util.List;
 import java.util.Map;
 
-public class SwerveSubsytem extends SubsystemBase{
+public class SwerveSubsystem extends SubsystemBase{
 
     private final SwerveDrive swerveDrive;
 
     private SwerveAutoBuilder autoBuilder = null;
 
-    public SwerveSubsytem(File directory) {
+    public SwerveSubsystem(File directory) {
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
         try
