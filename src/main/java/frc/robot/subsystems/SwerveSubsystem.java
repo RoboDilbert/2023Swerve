@@ -28,12 +28,17 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import java.util.List;
 import java.util.Map;
+import edu.wpi.first.math.util.Units;
+
 
 public class SwerveSubsystem extends SubsystemBase{
 
     private final SwerveDrive swerveDrive;
 
     private SwerveAutoBuilder autoBuilder = null;
+
+    public  double            maximumSpeed = Units.feetToMeters(14.5); //14.5
+
 
     public SwerveSubsystem(File directory) {
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
@@ -56,6 +61,14 @@ public class SwerveSubsystem extends SubsystemBase{
                         fieldRelative,
                         isopenloop); // Open loop is disabled since it shouldn't be used most of the time.
     }
+
+    public void drive(Translation2d translation, double rotation, boolean fieldRelative)
+  {
+    swerveDrive.drive(translation,
+                      rotation,
+                      fieldRelative,
+                      false); // Open loop is disabled since it shouldn't be used most of the time.
+  }
 
 
 
@@ -120,6 +133,17 @@ public class SwerveSubsystem extends SubsystemBase{
     public Rotation2d getPitch(){
       return swerveDrive.getPitch();
     }
+
+    public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle)
+  {
+    xInput = Math.pow(xInput, 3);
+    yInput = Math.pow(yInput, 3);
+    return swerveDrive.swerveController.getTargetSpeeds(xInput,
+                                                        yInput,
+                                                        angle.getRadians(),
+                                                        getHeading().getRadians(),
+                                                        maximumSpeed);
+  }
 
     public void addFakeVisionReading(){
         swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp(), true, 4);
