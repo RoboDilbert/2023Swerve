@@ -4,55 +4,74 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import java.util.function.BooleanSupplier;
 import swervelib.SwerveController;
 import swervelib.math.SwerveMath;
 import frc.robot.subsystems.SwerveSubsystem;
+public class AbsoluteDrive extends CommandBase
+{
 
-public class AbsoluteDrive extends CommandBase {
+  private final SwerveSubsystem  swerve;
+  private final DoubleSupplier   vX;
+  private final DoubleSupplier   vY;
+  private final DoubleSupplier   omega;
+  private final BooleanSupplier  driveMode;
+  private final SwerveController controller;
 
-    private final SwerveSubsystem swerve;
-    private final DoubleSupplier  vX, vY;
-    private final DoubleSupplier headingHorizontal, headingVertical;
-    private final boolean isOpenLoop;
+  /**
+   * Creates a new ExampleCommand.
+   *
+   * @param swerve The subsystem used by this command.
+   */
+  public AbsoluteDrive(SwerveSubsystem swerve, DoubleSupplier vX, DoubleSupplier vY, DoubleSupplier omega,
+                     BooleanSupplier driveMode)
+  {
+    this.swerve = swerve;
+    this.vX = vX;
+    this.vY = vY;
+    this.omega = omega;
+    this.driveMode = driveMode;
+    this.controller = swerve.getSwerveController();
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(swerve);
+  }
+  @Override
+  public void initialize()
+  {
+  }
 
-    public AbsoluteDrive(SwerveSubsystem swerve, DoubleSupplier vX, DoubleSupplier vY, DoubleSupplier headingHorizontal, DoubleSupplier headingVertical, boolean isOpenLoop){
-        this.swerve = swerve;
-        this.vX = vX;
-        this.vY = vY;
-        this.headingHorizontal = headingHorizontal;
-        this.headingVertical = headingVertical;
-        this.isOpenLoop = isOpenLoop;
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute()
+  {
+    double xVelocity   = Math.pow(vX.getAsDouble(), 3);
+    double yVelocity   = Math.pow(vY.getAsDouble(), 3);
+    double angVelocity = Math.pow(omega.getAsDouble(), 3);
+    SmartDashboard.putNumber("vX", xVelocity);
+    SmartDashboard.putNumber("vY", yVelocity);
+    SmartDashboard.putNumber("omega", angVelocity);
 
-        addRequirements(swerve);
-    }
+    // Drive using raw values.
+    swerve.drive(new Translation2d(xVelocity * swerve.maximumSpeed, yVelocity * swerve.maximumSpeed),
+                 angVelocity * controller.config.maxAngularVelocity,
+                 driveMode.getAsBoolean());
+  
+  }
 
-    @Override
-    public void execute(){
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted)
+  {
+  }
 
-        // Get the desired chassis speeds based on a 2 joystick module.
-
-        ChassisSpeeds desiredSpeeds = swerve.getTargetSpeeds(vX.getAsDouble()/2, vY.getAsDouble()/2,
-                                                            headingHorizontal.getAsDouble(),
-                                                            headingVertical.getAsDouble());
-
-        // Limit velocity to prevent tippy
-        Translation2d translation = SwerveController.getTranslation2d(desiredSpeeds);
-        translation = SwerveMath.limitVelocity(translation, swerve.getFieldVelocity(), swerve.getPose(),
-                                            Constants.LOOP_TIME, Constants.ROBOT_MASS, List.of(Constants.CHASSIS),
-                                            swerve.getSwerveDriveConfiguration());
-        SmartDashboard.putNumber("LimitedTranslation", translation.getX());
-        SmartDashboard.putString("Translation", translation.toString());
-
-        // Make the robot move
-        swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, true, isOpenLoop);
-    }
-
-    @Override
-  public boolean isFinished(){
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished()
+  {
     return false;
   }
-        
 }

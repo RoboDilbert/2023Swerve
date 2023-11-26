@@ -35,6 +35,13 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+
+    AbsoluteDrive closedFieldRel = new AbsoluteDrive(
+        drivebase,
+        () -> MathUtil.applyDeadband(driverController.getY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverController.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> -driverController.getRawAxis(3), () -> true);
+    drivebase.setDefaultCommand(closedFieldRel);
   }
 
   /**
@@ -48,7 +55,6 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    
   }
 
   /**
