@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.commands.AbsoluteDrive;
 import frc.robot.commands.Auto;
 import frc.robot.subsystems.SwerveSubsystem;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.io.File;
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,20 +29,21 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  CommandJoystick driverController = new CommandJoystick(1);
+  CommandJoystick driverController = new CommandJoystick(0);
 
-  XboxController driverXbox = new XboxController(0);
+  //XboxController driverXbox = new XboxController(0);
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
 
-    AbsoluteDrive closedFieldRel = new AbsoluteDrive(
-        drivebase,
-        () -> MathUtil.applyDeadband(driverController.getY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverController.getX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> -driverController.getRawAxis(3), () -> true);
+      AbsoluteDrive closedFieldRel = new AbsoluteDrive(
+      drivebase,
+      () -> MathUtil.applyDeadband(-driverController.getX(), OperatorConstants.LEFT_X_DEADBAND),
+      () -> MathUtil.applyDeadband(driverController.getY(), OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverController.getRawAxis(2), OperatorConstants.ANGLE_DEADBAND), () -> true);
+
     drivebase.setDefaultCommand(closedFieldRel);
   }
 
@@ -55,6 +58,8 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+    driverController.button(5).onTrue((new InstantCommand(drivebase::zeroGyro)));
+
   }
 
   /**
